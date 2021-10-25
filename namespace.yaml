@@ -3,7 +3,6 @@ kind: Namespace
 metadata:
   name: jenkins-minikube
 
-  
 ---
 apiVersion: v1
 kind: ResourceQuota
@@ -14,10 +13,10 @@ spec:
   hard:
     configmaps: '5'
     cpu: '4'
-    memory: 2Gi
+    memory: 6Gi
     pods: '2'
     replicationcontrollers: '3'
-    secrets: '5'
+    secrets: '50'
     services: '5'
     services.loadbalancers: '5'
 
@@ -36,3 +35,22 @@ spec:
       cpu: '0.2'
       memory: 128Mi
     type: Container
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ruby-web-application-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      service_name: ruby-web-application
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - ipBlock:
+          cidr: "0.0.0.0/0"
+  egress:
+    - {}
