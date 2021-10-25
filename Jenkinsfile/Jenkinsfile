@@ -1,0 +1,80 @@
+pipeline {
+    agent any
+    environment{
+        APPLICATION_GIT_REPO       = "https://github.com/sawasy/http_server.git"
+        APPLICATION_GIT_BRANCH     = "master"
+        INFRASTRUCTURE_GIT_REPO    = "https://github.com/abhpadhi/POC-webapp.git"
+        GIT_BRANCH                 = "master"
+        INFRASTRUCTURE_CODE_DIR    = ""
+        APPLICATION_CODE_DIR       = ""
+        WORK_DIR                   = "/root/project"
+        DOCKER_REGISTRY            = ""
+    }
+    stages{
+        stage('pulling application code from git') {
+            script {
+                dir("$SUB_DIR") {
+                    checkout([$class: 'GitSCM', 
+                          branches: [[name: "*/${GIT_BRANCH}"]], 
+                          doGenerateSubmoduleConfigurations: false, 
+                          extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${SUB_DIR}"]], 
+                          submoduleCfg: [], 
+                          userRemoteConfigs: [[credentialsId: 'git_user', url: "${APPLICATION_GIT_REPO}"]]
+                          ])
+                } 
+            }
+        }
+        stage('pulling infra code from git') {
+            script {
+                dir("$SUB_DIR") {
+                    checkout([$class: 'GitSCM', 
+                          branches: [[name: "*/${GIT_BRANCH}"]], 
+                          doGenerateSubmoduleConfigurations: false, 
+                          extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${SUB_DIR}"]], 
+                          submoduleCfg: [], 
+                          userRemoteConfigs: [[credentialsId: 'git_user', url: "${INFRASTRUCTURE_GIT_REPO}"]]
+                          ])
+                }
+            }
+        }
+        stage('Pre-build steps') {
+            dir('/root/project') 
+            steps {
+                sh """
+                    cp /root/${INFRASTRUCTURE_CODE_DIR}/Dockerfile /root/project/Dockerfile
+                    cp -pr /root/${INFRASTRUCTURE_CODE_DIR}/helm /root/project/helm
+                    cp -pr /root/${APPLICATION_GIT_REPO}/http_server.rb /root/project
+                """
+            }
+
+        }
+        stage('Docker build') {
+            steps {
+                sh """
+                    IMAGE_TAG=${BUILD_NUMBER}
+                    echo IMAGE_TAG=${IMAGE_TAG} > version.txt
+                    SERVICE_NAME = "ruby-web-application"
+                    docker build -t "${DOCKER_REGISTRY}/${SERVICE_NAME}:${IMAGE_TAG}" --file /root/${INFRASTRUCTURE_CODE_DIR}/Dockerfile .
+                    docker tag "${DOCKER_REGISTRY}/${SERVICE_NAME}:${IMAGE_TAG}" "${DOCKER_REGISTRY}/${SERVICE_NAME}:latest"
+                    docker push "${DOCKER_REGISTRY}/${SERVICE_NAME}:${IMAGE_TAG}"
+                """
+            }
+
+        }
+        stage('Minikube deployment') {}
+            steps {
+                sh """
+                    cd /root/
+                    IMAGE_TAG=$(cat version.txt)
+                    export HELM_EXPERIMENTAL_OCI=1
+                    SERVICE_NAME = "ruby-web-application"
+                    echo $image_tag
+                    helm upgrade --install --reuse-values $SERVICE_NAME >> ./helm \
+                      --set name=$SERVICE_NAME >> \
+                      --set repository=$AWS_ECR_ACCOUNT_URL \
+                      --set image_tag=$image_tag
+                    cd ./helm
+                """
+            }
+    }
+}

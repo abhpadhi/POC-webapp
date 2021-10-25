@@ -1,0 +1,2 @@
+service_name: ruby-web-application
+docker_registry: abhpadhi/images
