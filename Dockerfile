@@ -1,5 +1,5 @@
 FROM ruby:3.0.0-alpine3.13 as ruby-latest
-RUN apk update && apk add 
+RUN apk update && apk add curl sudo
 WORKDIR /root/project
 COPY "project/http_server.rb" "/root/project/webserver.rb"
 #adding nonroot user
