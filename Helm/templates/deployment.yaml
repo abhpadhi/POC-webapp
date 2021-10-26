@@ -31,15 +31,18 @@ spec:
           livenessProbe:
             exec:
               command:  
-              - curl --http0.9 localhost:80/healthcheck
+              - "curl"
+              - "--http0.9"
+              - "localhost:80/healthcheck"
             initialDelaySeconds: 30
             periodSeconds: 10
-        #   readinessProbe:
-        #     httpGet:
-        #       path: /healthcheck
-        #       port: 80
-        #     initialDelaySeconds: 300
-        #     periodSeconds: 10
+          readinessProbe:
+              command:  
+              - "curl"
+              - "--http0.9"
+              - "localhost:80/healthcheck"
+            initialDelaySeconds: 30
+            periodSeconds: 10
           resources:
             requests:
               memory: 128M
