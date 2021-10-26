@@ -2,6 +2,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  labels:
+    name: {{ .Values.service_name }}
   name: {{ .Values.service_name }}
 spec:
   replicas: {{ .Values.replicas }}
@@ -23,13 +25,14 @@ spec:
       containers:
         - name: {{ .Values.service_name }}
           image:  "{{ .Values.docker_registry }}:{{ .Values.service_name }}-{{ .Values.image_tag }}"
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           livenessProbe:
-            httpGet:
-              path: /healthcheck
-              port: 80
-            initialDelaySeconds: 300
+            exec:
+              command:  
+              - curl --http0.9 localhost:80/healthcheck
+            initialDelaySeconds: 30
             periodSeconds: 10
         #   readinessProbe:
         #     httpGet:
