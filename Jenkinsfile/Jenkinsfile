@@ -8,7 +8,8 @@ pipeline {
         INFRASTRUCTURE_CODE_DIR    = ""
         APPLICATION_CODE_DIR       = ""
         WORK_DIR                   = "/root/project"
-        DOCKER_REGISTRY            = ""
+        DOCKER_REGISTRY            = "abhpadhi/images"
+        DOCKER_USER                = "abhpadhi"
     }
     stages{
         stage('pulling application code from git') {
@@ -54,27 +55,31 @@ pipeline {
                     IMAGE_TAG=${BUILD_NUMBER}
                     echo IMAGE_TAG=${IMAGE_TAG} > version.txt
                     SERVICE_NAME = "ruby-web-application"
-                    docker build -t "${DOCKER_REGISTRY}/${SERVICE_NAME}:${IMAGE_TAG}" --file /root/${INFRASTRUCTURE_CODE_DIR}/Dockerfile .
-                    docker tag "${DOCKER_REGISTRY}/${SERVICE_NAME}:${IMAGE_TAG}" "${DOCKER_REGISTRY}/${SERVICE_NAME}:latest"
-                    docker push "${DOCKER_REGISTRY}/${SERVICE_NAME}:${IMAGE_TAG}"
+                    echo -n 'QXZpbmFzaDEh' | base64 --decode | docker login --password-stdin -u ${DOCKER_USER}
+                    docker build -t "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" --file /root/${INFRASTRUCTURE_CODE_DIR}/Dockerfile .
+                    docker tag "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" "${DOCKER_REGISTRY}:${SERVICE_NAME}:latest"
+                    docker push "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}"
                 """
             }
 
         }
-        stage('Minikube deployment') {}
+        stage('Minikube deployment') {
             steps {
                 sh """
-                    cd /root/
-                    IMAGE_TAG=$(cat version.txt)
+                    cd /root/project
+                    kubectl apply -f namespace.yaml
+                    IMAGE_TAG=$(awk -F "=" '{print $2}' version.txt)
                     export HELM_EXPERIMENTAL_OCI=1
-                    SERVICE_NAME = "ruby-web-application"
-                    echo $image_tag
-                    helm upgrade --install --reuse-values $SERVICE_NAME >> ./helm \
-                      --set name=$SERVICE_NAME >> \
-                      --set repository=$AWS_ECR_ACCOUNT_URL \
-                      --set image_tag=$image_tag
-                    cd ./helm
+                    export SERVICE_NAME="ruby-web-application"
+                    export NAMESPACE="jenkins-minikube"
+                    export docker_registry="abhpadhi/images"
+                    helm upgrade --install --reuse-values --namespace ${NAMESPACE} ${SERVICE_NAME} ./Helm \
+                      --set service_name=${SERVICE_NAME} \
+                      --set replicas=2 \
+                      --set docker_registry=${docker_registry} \
+                      --set image_tag=${IMAGE_TAG}
                 """
             }
+        }
     }
 }
