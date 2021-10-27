@@ -7,7 +7,7 @@ pipeline {
         GIT_BRANCH                 = "master"
         INFRASTRUCTURE_CODE_DIR    = ""
         APPLICATION_CODE_DIR       = ""
-        WORK_DIR                   = "/root/project"
+        SUB_DIR                   = "/root/project"
         DOCKER_REGISTRY            = "abhpadhi/images"
         DOCKER_USER                = "abhpadhi"
     }
