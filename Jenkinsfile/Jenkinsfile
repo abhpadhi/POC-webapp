@@ -7,7 +7,7 @@ pipeline {
         GIT_BRANCH                 = "master"
         INFRASTRUCTURE_CODE_DIR    = ""
         APPLICATION_CODE_DIR       = ""
-        SUB_DIR                   = "/root/project"
+        SUB_DIR                   = "/Users/project"
         DOCKER_REGISTRY            = "abhpadhi/images"
         DOCKER_USER                = "abhpadhi"
     }
@@ -15,7 +15,7 @@ pipeline {
         stage('pulling application code from git') {
             steps {
                 script {
-                    dir("$SUB_DIR") {
+                    dir("$WORKSPACE") {
                         checkout scm: [$class: 'GitSCM', branches: [[name: "*/${GIT_BRANCH}"]], extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${SUB_DIR}"]], userRemoteConfigs: [[credentialsId: 'abhpadhi', url: "{$APPLICATION_GIT_REPO}"]]]
                     }      
                 } 
