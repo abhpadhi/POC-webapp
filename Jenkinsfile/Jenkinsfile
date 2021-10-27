@@ -7,7 +7,6 @@ pipeline {
         GIT_BRANCH                 = "master"
         DOCKER_REGISTRY            = "abhpadhi/images"
         DOCKER_USER                = "abhpadhi"
-        docker                     = "/usr/local/bin/docker"
     }
  
     stages{
@@ -30,6 +29,12 @@ pipeline {
             }
         }
         stage('Docker build') {
+            agent {
+              docker {
+                label 'dockerserver'  
+                image 'alpine:3.13.6' 
+              }
+            }
             steps {
                 script {
                     withCredentials([string(credentialsId: 'docker_pwd', variable: 'docker_password')]) {
