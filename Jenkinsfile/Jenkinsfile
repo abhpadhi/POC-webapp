@@ -33,7 +33,7 @@ pipeline {
         stage('Docker build') {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'docker_pwd', variable: 'docker_password')])
+                    withCredentials([string(credentialsId: 'docker_pwd', variable: 'docker_password')]) {
                         dir("$WORKSPACE") {
                         sh '''
                             IMAGE_TAG=${env.BUILD_NUMBER}
@@ -44,6 +44,7 @@ pipeline {
                             docker tag "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" "${DOCKER_REGISTRY}:${SERVICE_NAME}:latest"
                             docker push "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}"
                         '''
+                        }
                     }
                 }
             }
@@ -51,7 +52,7 @@ pipeline {
         stage('Minikube deployment') {
             steps {
                 script {
-                    withCredentials([kubeconfigFile(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')])
+                    withCredentials([kubeconfigFile(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
                     dir("$WORKSPACE") {
                     sh '''
                         kubectl apply -f namespace.yaml
@@ -65,7 +66,8 @@ pipeline {
                             --set replicas=2 \
                             --set docker_registry=${docker_registry} \
                             --set image_tag=${IMAGE_TAG}
-                '''
+                    '''
+                    }
                 }
               }
             }
