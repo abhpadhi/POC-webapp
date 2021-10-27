@@ -11,10 +11,11 @@ spec:
       port:
         number: 80
   rules:
-    - http:
+    - host: ruby-web.info
+      http:
         paths:
           - path: /
-            pathType: ImplementationSpecific
+            pathType: Prefix
             backend:
               service:
                 name: {{ .Values.service_name }}
