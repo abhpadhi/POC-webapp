@@ -7,7 +7,7 @@ pipeline {
         GIT_BRANCH                 = "master"
         INFRASTRUCTURE_CODE_DIR    = ""
         APPLICATION_CODE_DIR       = ""
-        SUB_DIR                   = "/Users/project"
+        SUB_DIR                   = "/Users/apadhi/jenkins/project/"
         DOCKER_REGISTRY            = "abhpadhi/images"
         DOCKER_USER                = "abhpadhi"
     }
