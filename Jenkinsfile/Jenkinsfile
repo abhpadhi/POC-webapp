@@ -13,72 +13,89 @@ pipeline {
     }
     stages{
         stage('pulling application code from git') {
-            script {
-                dir("$SUB_DIR") {
-                    checkout([$class: 'GitSCM', 
-                          branches: [[name: "*/${GIT_BRANCH}"]], 
-                          doGenerateSubmoduleConfigurations: false, 
-                          extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${SUB_DIR}"]], 
-                          submoduleCfg: [], 
-                          userRemoteConfigs: [[credentialsId: 'git_user', url: "${APPLICATION_GIT_REPO}"]]
+            steps {
+                script {
+                    dir('$SUB_DIR') {
+                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: '*/${GIT_BRANCH}']], extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${SUB_DIR}"]], userRemoteConfigs: [[url: '{$APPLICATION_GIT_REPO}']]]
                           ])
+                    }      
                 } 
             }
         }
         stage('pulling infra code from git') {
-            script {
-                dir("$SUB_DIR") {
-                    checkout([$class: 'GitSCM', 
-                          branches: [[name: "*/${GIT_BRANCH}"]], 
-                          doGenerateSubmoduleConfigurations: false, 
-                          extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${SUB_DIR}"]], 
-                          submoduleCfg: [], 
-                          userRemoteConfigs: [[credentialsId: 'git_user', url: "${INFRASTRUCTURE_GIT_REPO}"]]
+            steps {
+                script {
+                    dir('$SUB_DIR') {
+                        checkout([$class: 'GitSCM', 
+                            branches: [[name: '*/${GIT_BRANCH}']],  
+                            extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '${SUB_DIR}']], 
+                            submoduleCfg: [], 
+                            userRemoteConfigs: [[credentialsId: 'git_user', url: '${INFRASTRUCTURE_GIT_REPO}']]
                           ])
+                    }
+                }   
+            }
+        }
+        stage('Pre-build steps') { 
+            steps {
+                script {
+                    dir('/root/') {
+                    sh '''  
+                        cp /root/${INFRASTRUCTURE_CODE_DIR}/Dockerfile /root/project/Dockerfile
+                        cp -pr /root/${INFRASTRUCTURE_CODE_DIR}/helm /root/project/helm
+                        cp -pr /root/${APPLICATION_GIT_REPO}/http_server.rb /root/project
+                    '''
+                    }
                 }
             }
         }
-        stage('Pre-build steps') {
-            dir('/root/project') 
-            steps {
-                sh """
-                    cp /root/${INFRASTRUCTURE_CODE_DIR}/Dockerfile /root/project/Dockerfile
-                    cp -pr /root/${INFRASTRUCTURE_CODE_DIR}/helm /root/project/helm
-                    cp -pr /root/${APPLICATION_GIT_REPO}/http_server.rb /root/project
-                """
-            }
-
-        }
         stage('Docker build') {
             steps {
-                sh """
-                    IMAGE_TAG=${BUILD_NUMBER}
-                    echo IMAGE_TAG=${IMAGE_TAG} > version.txt
-                    SERVICE_NAME = "ruby-web-application"
-                    echo -n 'QXZpbmFzaDEh' | base64 --decode | docker login --password-stdin -u ${DOCKER_USER}
-                    docker build -t "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" --file /root/${INFRASTRUCTURE_CODE_DIR}/Dockerfile .
-                    docker tag "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" "${DOCKER_REGISTRY}:${SERVICE_NAME}:latest"
-                    docker push "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}"
-                """
+                script {
+                    withCredentials([string(credentialsId: 'docker_pwd', variable: 'docker_password')])
+                        dir('/root/project/') {
+                        sh '''
+                            IMAGE_TAG=${env.BUILD_NUMBER}
+                            echo IMAGE_TAG=${IMAGE_TAG} > version.txt
+                            SERVICE_NAME = "ruby-web-application"
+                            docker login -u ${DOCKER_USER} -p $docker_password
+                            docker build -t "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" --file /root/${INFRASTRUCTURE_CODE_DIR}/Dockerfile .
+                            docker tag "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" "${DOCKER_REGISTRY}:${SERVICE_NAME}:latest"
+                            docker push "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}"
+                        '''
+                    }
+                }
             }
-
         }
         stage('Minikube deployment') {
             steps {
-                sh """
-                    cd /root/project
-                    kubectl apply -f namespace.yaml
-                    IMAGE_TAG=$(awk -F "=" '{print $2}' version.txt)
-                    export HELM_EXPERIMENTAL_OCI=1
-                    export SERVICE_NAME="ruby-web-application"
-                    export NAMESPACE="jenkins-minikube"
-                    export docker_registry="abhpadhi/images"
-                    helm upgrade --install --reuse-values --namespace ${NAMESPACE} ${SERVICE_NAME} ./Helm \
-                      --set service_name=${SERVICE_NAME} \
-                      --set replicas=2 \
-                      --set docker_registry=${docker_registry} \
-                      --set image_tag=${IMAGE_TAG}
-                """
+                script {
+                    withCredentials([kubeconfigFile(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')])
+                    dir('/root/project/') {
+                    sh '''
+                        kubectl apply -f namespace.yaml
+                        IMAGE_TAG=$(awk -F "=" '{print $2}' version.txt)
+                        export HELM_EXPERIMENTAL_OCI=1
+                        export SERVICE_NAME="ruby-web-application"
+                        export NAMESPACE="jenkins-minikube"
+                        export docker_registry="abhpadhi/images"
+                        helm upgrade --install --reuse-values --namespace ${NAMESPACE} ${SERVICE_NAME} ./Helm \
+                            --set service_name=${SERVICE_NAME} \
+                            --set replicas=2 \
+                            --set docker_registry=${docker_registry} \
+                            --set image_tag=${IMAGE_TAG}
+                '''
+                }
+              }
+            }
+        }
+        stage('Post deployment smoke-test') {
+            steps {
+                script {
+                    sh '''
+                        curl -v http://$(minikube ip):30000
+                    '''
+                }
             }
         }
     }
