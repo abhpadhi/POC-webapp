@@ -39,6 +39,6 @@ The web application is a basic 200OK App written in ruby sitting on top of minik
 - Run below to enable minikube ingress feature
   > **minikube addons enable ingress**
 - NOTE: Please create required github and docker credentials in Jenkins credential manager
-- Once the deployment is completed, Please pickup the ingress controller IP and enter in brower 
+- Once the deployment is completed, Please pickup the ingress IP and enter in brower i.e.
 >**Http://{IP}:80**
 <img width="1780" alt="Screenshot 2021-10-27 at 6 29 13 PM" src="https://user-images.githubusercontent.com/47022510/139070972-f8ed8e5e-6959-4a48-bf13-16a98ccfe6f1.png">
