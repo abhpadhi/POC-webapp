@@ -31,8 +31,8 @@ pipeline {
         stage('Docker build') {
             agent {
               any {
-                label 'dockerserver'  
-                image 'alpine:3.13.6' 
+                label 'docker'  
+                image 'docker:git' 
               }
             }
             steps {
