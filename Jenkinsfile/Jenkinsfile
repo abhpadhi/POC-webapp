@@ -1,9 +1,9 @@
 pipeline {
     agent any
     environment{
-        APPLICATION_GIT_REPO       = "https://github.com/sawasy/http_server.git"
+        APPLICATION_GIT_REPO       = "://github.com/sawasy/http_server.git"
         APPLICATION_GIT_BRANCH     = "master"
-        INFRASTRUCTURE_GIT_REPO    = "https://github.com/abhpadhi/POC-webapp.git"
+        INFRASTRUCTURE_GIT_REPO    = "://github.com/abhpadhi/POC-webapp.git"
         GIT_BRANCH                 = "master"
         INFRASTRUCTURE_CODE_DIR    = ""
         APPLICATION_CODE_DIR       = ""
