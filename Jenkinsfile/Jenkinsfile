@@ -43,7 +43,7 @@ pipeline {
                         sh '''
                             echo image=$BUILD_NUMBER
                             export IMAGE_TAG=${BUILD_NUMBER}
-                            > version.txt
+                            touch version.txt
                             echo IMAGE_TAG=${IMAGE_TAG} > version.txt
                             export SERVICE_NAME="ruby-web-application"
                             /usr/local/bin/docker login -u ${DOCKER_USER} -p $docker_password
@@ -63,7 +63,7 @@ pipeline {
                     sh '''
                         /usr/local/bin/kubectl apply -f namespace.yaml
                         sleep 20
-                        export IMAGE_TAG=$(awk -F "=" '{print $2}' version.txt)
+                        // export IMAGE_TAG=$(awk -F "=" '{print $2}' version.txt)
                         export HELM_EXPERIMENTAL_OCI=1
                         export SERVICE_NAME="ruby-web-application"
                         export NAMESPACE="jenkins-minikube"
