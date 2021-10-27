@@ -11,7 +11,7 @@ pipeline {
         DOCKER_REGISTRY            = "abhpadhi/images"
         DOCKER_USER                = "abhpadhi"
     }
-    https://github.com/sawasy/http_server.git
+ 
     stages{
         stage('pulling application code from git') {
             steps {
