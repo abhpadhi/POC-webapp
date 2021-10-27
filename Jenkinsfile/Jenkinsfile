@@ -81,7 +81,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        curl -v http://$(minikube ip):30000
+                        curl -v http://$(/usr/local/bin/minikube ip):30000
                     '''
                 }
             }
