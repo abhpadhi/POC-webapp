@@ -44,7 +44,7 @@ pipeline {
                             echo IMAGE_TAG=${IMAGE_TAG} > version.txt
                             export SERVICE_NAME="ruby-web-application"
                             /usr/local/bin/docker login -u ${DOCKER_USER} -p $docker_password
-                            /usr/local/bin/docker build -t "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" --file .
+                            /usr/local/bin/docker build . -t "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}"
                             /usr/local/bin/docker tag "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" "${DOCKER_REGISTRY}:${SERVICE_NAME}:latest"
                             /usr/local/bin/docker push "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}"
                         '''
