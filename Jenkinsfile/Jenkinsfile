@@ -17,7 +17,7 @@ pipeline {
             steps {
                 script {
                     dir("$WORKSPACE") {
-                        checkout scm: [$class: 'GitSCM', branches: [[name: "*/${GIT_BRANCH}"]], extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${SUB_DIR}"]], userRemoteConfigs: [[credentialsId: 'abhpadhi', url: "${APPLICATION_GIT_REPO}"]]]
+                        checkout scm: [$class: 'GitSCM', branches: [[name: "*/${APPLICATION_GIT_BRANCH}"]], extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: "${SUB_DIR}"]], userRemoteConfigs: [[credentialsId: 'abhpadhi', url: "${APPLICATION_GIT_REPO}"]]]
                     }      
                 } 
             }
