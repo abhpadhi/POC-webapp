@@ -29,12 +29,6 @@ pipeline {
             }
         }
         stage('Docker build') {
-            agent {
-              any {
-                label 'docker'  
-                image 'docker:git' 
-              }
-            }
             steps {
                 script {
                     withCredentials([string(credentialsId: 'docker_pwd', variable: 'docker_password')]) {
