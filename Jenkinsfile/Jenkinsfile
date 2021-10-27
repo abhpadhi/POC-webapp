@@ -40,6 +40,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'docker_pwd', variable: 'docker_password')]) {
                         dir("$WORKSPACE") {
                         sh '''
+                            echo image=$BUILD_NUMBER
                             export IMAGE_TAG=${BUILD_NUMBER}
                             echo IMAGE_TAG=${IMAGE_TAG} > version.txt
                             export SERVICE_NAME="ruby-web-application"
