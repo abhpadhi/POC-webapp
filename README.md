@@ -33,7 +33,7 @@ The web application is a basic 200OK App written in ruby sitting on top of minik
 - Install minikube and initialize minikube 
     >**brew install minikube**
     
-    >**minikube start
+    >**minikube start**
 - Create job to utilize the pipeline file
 - Trigger the JOB to create the minikube cluster
 - NOTE: Please create required github and docker credentials in Jenkins credential manager
