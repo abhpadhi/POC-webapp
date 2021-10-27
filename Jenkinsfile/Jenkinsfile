@@ -29,6 +29,12 @@ pipeline {
             }
         }
         stage('Docker build') {
+            agent {
+              any {
+                label 'docker'  
+                image 'docker:git' 
+              }
+            }
             steps {
                 script {
                     withCredentials([string(credentialsId: 'docker_pwd', variable: 'docker_password')]) {
@@ -52,11 +58,10 @@ pipeline {
         stage('Minikube deployment') {
             steps {
                 script {
-                    // withCredentials([kubeconfigFile(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
                     dir("$WORKSPACE") {
                     sh '''
-                        # commenting namespace creation for now as its already present
-                        #kubectl apply -f namespace.yaml
+                        /usr/local/bin/kubectl apply -f namespace.yaml
+                        sleep 20
                         export IMAGE_TAG=$(awk -F "=" '{print $2}' version.txt)
                         export HELM_EXPERIMENTAL_OCI=1
                         export SERVICE_NAME="ruby-web-application"
@@ -69,16 +74,6 @@ pipeline {
                             --set image_tag=${IMAGE_TAG}
                     '''
                     }
-                // }
-              }
-            }
-        }
-        stage('Post deployment smoke-test') {
-            steps {
-                script {
-                    sh '''
-                        curl -v http://$(/usr/local/bin/minikube ip):30000
-                    '''
                 }
             }
         }
