@@ -3,14 +3,18 @@ kind: Ingress
 metadata:
   name: {{ .Values.service_name }}-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernets.io/ingress.class: "nginx"
 spec:
+  defaultBackend:
+    service:
+      name: {{ .Values.service_name }}
+      port:
+        number: 80
   rules:
-    - host: {{ .Values.service_name }}.info
-      http:
+    - http:
         paths:
           - path: /
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: {{ .Values.service_name }}
