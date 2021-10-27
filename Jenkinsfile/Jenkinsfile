@@ -7,13 +7,14 @@ pipeline {
         GIT_BRANCH                 = "master"
         DOCKER_REGISTRY            = "abhpadhi/images"
         DOCKER_USER                = "abhpadhi"
+        USER_DIR                   = "$WORKSPACE/http"
     }
  
     stages{
         stage('pulling application code from git') {
             steps {
                 script {
-                    dir("$WORKSPACE") {
+                    dir("$USER_DIR") {
                         checkout scm: [$class: 'GitSCM', branches: [[name: "*/${APPLICATION_GIT_BRANCH}"]], extensions: [], userRemoteConfigs: [[credentialsId: 'abhpadhi', url: "$APPLICATION_GIT_REPO"]]]
                     }      
                 } 
@@ -42,6 +43,7 @@ pipeline {
                         sh '''
                             echo image=$BUILD_NUMBER
                             export IMAGE_TAG=${BUILD_NUMBER}
+                            cp ./http/http_server.rb .
                             > version.txt
                             echo IMAGE_TAG=${IMAGE_TAG} > version.txt
                             export SERVICE_NAME="ruby-web-application"
