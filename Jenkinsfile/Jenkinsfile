@@ -5,8 +5,6 @@ pipeline {
         APPLICATION_GIT_BRANCH     = "main"
         INFRASTRUCTURE_GIT_REPO    = "https://github.com/abhpadhi/POC-webapp.git"
         GIT_BRANCH                 = "master"
-        INFRASTRUCTURE_CODE_DIR    = ""
-        APPLICATION_CODE_DIR       = ""
         DOCKER_REGISTRY            = "abhpadhi/images"
         DOCKER_USER                = "abhpadhi"
     }
@@ -36,11 +34,11 @@ pipeline {
                     withCredentials([string(credentialsId: 'docker_pwd', variable: 'docker_password')]) {
                         dir("$WORKSPACE") {
                         sh '''
-                            IMAGE_TAG=${env.BUILD_NUMBER}
+                            IMAGE_TAG=${BUILD_NUMBER}
                             echo IMAGE_TAG=${IMAGE_TAG} > version.txt
                             SERVICE_NAME = "ruby-web-application"
                             docker login -u ${DOCKER_USER} -p $docker_password
-                            docker build -t "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" --file /root/${INFRASTRUCTURE_CODE_DIR}/Dockerfile .
+                            docker build -t "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" --file ./Dockerfile 
                             docker tag "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" "${DOCKER_REGISTRY}:${SERVICE_NAME}:latest"
                             docker push "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}"
                         '''
