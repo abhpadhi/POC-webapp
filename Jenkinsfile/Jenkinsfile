@@ -42,6 +42,7 @@ pipeline {
                         sh '''
                             echo image=$BUILD_NUMBER
                             export IMAGE_TAG=${BUILD_NUMBER}
+                            > version.txt
                             echo IMAGE_TAG=${IMAGE_TAG} > version.txt
                             export SERVICE_NAME="ruby-web-application"
                             /usr/local/bin/docker login -u ${DOCKER_USER} -p $docker_password
