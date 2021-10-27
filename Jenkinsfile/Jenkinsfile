@@ -67,7 +67,7 @@ pipeline {
                         export SERVICE_NAME="ruby-web-application"
                         export NAMESPACE="jenkins-minikube"
                         export docker_registry="abhpadhi/images"
-                        /usr/local/bin/helm upgrade --install --reuse-values --namespace ${NAMESPACE} ${SERVICE_NAME} ./Helm \
+                        /usr/local/bin/helm upgrade --install --reuse-values --namespace ${NAMESPACE} ${SERVICE_NAME} ./Helm --debug \
                             --set service_name=${SERVICE_NAME} \
                             --set replicas=2 \
                             --set docker_registry=${docker_registry} \
