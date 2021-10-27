@@ -44,7 +44,7 @@ pipeline {
                             echo IMAGE_TAG=${IMAGE_TAG} > version.txt
                             export SERVICE_NAME="ruby-web-application"
                             /usr/local/bin/docker login -u ${DOCKER_USER} -p $docker_password
-                            /usr/local/bin/docker build . -t "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}"
+                            /usr/local/bin/docker build . -t "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" 
                             /usr/local/bin/docker tag "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" "${DOCKER_REGISTRY}:${SERVICE_NAME}-latest"
                             /usr/local/bin/docker push "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}"
                         '''
@@ -56,7 +56,7 @@ pipeline {
         stage('Minikube deployment') {
             steps {
                 script {
-                    withCredentials([kubeconfigFile(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
+                    // withCredentials([kubeconfigFile(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
                     dir("$WORKSPACE") {
                     sh '''
                         # commenting namespace creation for now as its already present
@@ -66,14 +66,14 @@ pipeline {
                         export SERVICE_NAME="ruby-web-application"
                         export NAMESPACE="jenkins-minikube"
                         export docker_registry="abhpadhi/images"
-                        helm upgrade --install --reuse-values --namespace ${NAMESPACE} ${SERVICE_NAME} ./Helm \
+                        /usr/local/bin/helm upgrade --install --reuse-values --namespace ${NAMESPACE} ${SERVICE_NAME} ./Helm \
                             --set service_name=${SERVICE_NAME} \
                             --set replicas=2 \
                             --set docker_registry=${docker_registry} \
                             --set image_tag=${IMAGE_TAG}
                     '''
                     }
-                }
+                // }
               }
             }
         }
