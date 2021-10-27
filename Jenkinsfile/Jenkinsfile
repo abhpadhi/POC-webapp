@@ -30,7 +30,7 @@ pipeline {
         }
         stage('Docker build') {
             agent {
-              docker {
+              any {
                 label 'dockerserver'  
                 image 'alpine:3.13.6' 
               }
