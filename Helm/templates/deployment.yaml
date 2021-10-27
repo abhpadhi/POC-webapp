@@ -36,12 +36,12 @@ spec:
               - "localhost:80/healthcheck"
             initialDelaySeconds: 30
             periodSeconds: 10
-          # readinessProbe:
-          #   exec:
-          #     command:  
-          #     - "curl"
-          #     - "--http0.9"
-          #     - "localhost:80/healthcheck"
+          readinessProbe:
+            exec:
+              command:  
+              - "curl"
+              - "--http0.9"
+              - "localhost:80/healthcheck"
             initialDelaySeconds: 30
             periodSeconds: 10
           resources:
