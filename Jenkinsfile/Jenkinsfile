@@ -34,9 +34,9 @@ pipeline {
                     withCredentials([string(credentialsId: 'docker_pwd', variable: 'docker_password')]) {
                         dir("$WORKSPACE") {
                         sh '''
-                            IMAGE_TAG=${BUILD_NUMBER}
+                            export IMAGE_TAG=${BUILD_NUMBER}
                             echo IMAGE_TAG=${IMAGE_TAG} > version.txt
-                            SERVICE_NAME = "ruby-web-application"
+                            export SERVICE_NAME = "ruby-web-application"
                             docker login -u ${DOCKER_USER} -p $docker_password
                             docker build -t "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" --file ./Dockerfile 
                             docker tag "${DOCKER_REGISTRY}:${SERVICE_NAME}-${IMAGE_TAG}" "${DOCKER_REGISTRY}:${SERVICE_NAME}:latest"
@@ -53,8 +53,9 @@ pipeline {
                     withCredentials([kubeconfigFile(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
                     dir("$WORKSPACE") {
                     sh '''
-                        kubectl apply -f namespace.yaml
-                        IMAGE_TAG=$(awk -F "=" '{print $2}' version.txt)
+                        # commenting namespace creation for now as its already present
+                        #kubectl apply -f namespace.yaml
+                        export IMAGE_TAG=$(awk -F "=" '{print $2}' version.txt)
                         export HELM_EXPERIMENTAL_OCI=1
                         export SERVICE_NAME="ruby-web-application"
                         export NAMESPACE="jenkins-minikube"
