@@ -43,7 +43,7 @@ pipeline {
                         sh '''
                             echo image=$BUILD_NUMBER
                             export IMAGE_TAG=${BUILD_NUMBER}
-                            cp ./http/http_server.rb .
+                            cp ${WORKSPACE}/http/http_server.rb .
                             > version.txt
                             echo IMAGE_TAG=${IMAGE_TAG} > version.txt
                             export SERVICE_NAME="ruby-web-application"
