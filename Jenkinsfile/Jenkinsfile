@@ -63,7 +63,7 @@ pipeline {
                     sh '''
                         /usr/local/bin/kubectl apply -f namespace.yaml
                         sleep 20
-                        // export IMAGE_TAG=$(awk -F "=" '{print $2}' version.txt)
+                        # export IMAGE_TAG=$(awk -F "=" '{print $2}' version.txt)
                         export HELM_EXPERIMENTAL_OCI=1
                         export SERVICE_NAME="ruby-web-application"
                         export NAMESPACE="jenkins-minikube"
