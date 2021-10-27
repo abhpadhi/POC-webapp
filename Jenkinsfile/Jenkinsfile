@@ -16,7 +16,7 @@ pipeline {
             steps {
                 script {
                     dir('$SUB_DIR') {
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: '*/${GIT_BRANCH}']], extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '${SUB_DIR}']], userRemoteConfigs: [[url: '{$APPLICATION_GIT_REPO}']]]
+                        checkout scm: [$class: 'GitSCM', branches: [[name: '*/${GIT_BRANCH}']], extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '${SUB_DIR}']], userRemoteConfigs: [[credentialsId: 'git_user', url: '{$APPLICATION_GIT_REPO}']]]
                     }      
                 } 
             }
